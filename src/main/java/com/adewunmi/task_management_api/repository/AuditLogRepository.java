@@ -13,4 +13,13 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     Page<AuditLog> findByTenantIdOrderByTimestampDesc(Long tenantId, Pageable pageable);
 
     Page<AuditLog> findByUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
+
+    Page<AuditLog> findByTenantIdAndEntityTypeAndEntityIdOrderByTimestampDesc(
+            Long tenantId, String entityType, Long entityId, Pageable pageable);
+
+    Page<AuditLog> findByTenantIdAndUserIdOrderByTimestampDesc(
+            Long tenantId, Long userId, Pageable pageable);
+
+    Page<AuditLog> findByTenantIdAndActionOrderByTimestampDesc(
+            Long tenantId, String action, Pageable pageable);
 }
