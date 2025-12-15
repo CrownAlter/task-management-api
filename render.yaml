@@ -1,17 +1,7 @@
 # Render Blueprint for Task Management API
-# This file defines the infrastructure as code for Render deployment
+# Infrastructure as Code for Render
 
 services:
-  # PostgreSQL Database Service
-  - type: pserv
-    name: task-management-db
-    env: docker
-    plan: standard
-    region: oregon
-    databaseName: task_management_db
-    databaseUser: task_admin
-    ipAllowList: []
-
   # Spring Boot Application Service
   - type: web
     name: task-management-api
@@ -19,88 +9,102 @@ services:
     region: oregon
     plan: standard
     branch: main
+
     buildCommand: mvn clean package -DskipTests
     startCommand: java -Dserver.port=$PORT -jar target/task-management-api-0.0.1-SNAPSHOT.jar
     healthCheckPath: /actuator/health
     numInstances: 2
+
     envVars:
       - key: JAVA_OPTS
         value: -Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
-      
+
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      
+
+      # Database (Render-managed)
       - key: DATABASE_URL
         fromDatabase:
           name: task-management-db
           property: connectionString
-      
+
       - key: DB_HOST
         fromDatabase:
           name: task-management-db
           property: host
-      
+
       - key: DB_PORT
         fromDatabase:
           name: task-management-db
           property: port
-      
+
       - key: DB_NAME
         fromDatabase:
           name: task-management-db
           property: database
-      
+
       - key: DB_USER
         fromDatabase:
           name: task-management-db
           property: user
-      
+
       - key: DB_PASSWORD
         fromDatabase:
           name: task-management-db
           property: password
-      
+
+      # Security
       - key: JWT_SECRET
         generateValue: true
         length: 64
-      
+
       - key: JWT_EXPIRATION
         value: 86400000
-      
+
       - key: JWT_REFRESH_EXPIRATION
         value: 604800000
-      
+
+      # File uploads
       - key: FILE_UPLOAD_DIR
         value: /opt/render/project/src/uploads
-      
+
       - key: FILE_MAX_SIZE
         value: 10485760
-      
+
+      # CORS
       - key: CORS_ALLOWED_ORIGINS
         value: https://your-frontend-domain.com,https://www.your-frontend-domain.com
-      
+
+      # HikariCP tuning
       - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
         value: 10
-      
+
       - key: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
         value: 5
-      
+
+      # Logging
       - key: LOGGING_LEVEL_ROOT
         value: INFO
-      
+
       - key: LOGGING_LEVEL_COM_ADEWUNMI
         value: INFO
-      
+
+      # Server
       - key: SERVER_COMPRESSION_ENABLED
         value: true
-      
+
+      # Actuator
       - key: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
         value: health,info,metrics
 
     autoDeploy: true
-    
-    # Disk for file uploads (persistent storage)
+
     disk:
       name: uploads
       mountPath: /opt/render/project/src/uploads
       sizeGB: 10
+
+databases:
+  - name: task-management-db
+    plan: standard
+    region: oregon
