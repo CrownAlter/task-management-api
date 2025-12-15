@@ -5,7 +5,8 @@ services:
   # Spring Boot Application Service
   - type: web
     name: task-management-api
-    env: java
+    env: docker
+
     region: oregon
     plan: standard
     branch: main
