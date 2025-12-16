@@ -3,10 +3,13 @@ spring:
     name: task-management-api
   
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:task_management_db}?sslmode=require&prepareThreshold=0
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:task_management_db}?sslmode=require&prepareThreshold=0&connectTimeout=30&socketTimeout=30
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
+    
+    # Initialize database schema on startup if needed
+    initialization-mode: never  # Flyway handles migrations
     
     # HikariCP Connection Pool Configuration (optimized for Render)
     hikari:
@@ -24,6 +27,9 @@ spring:
       validation-timeout: 5000
       connection-test-query: SELECT 1
       
+      # Initialization settings
+      initialization-fail-timeout: 60000  # Wait 60 seconds for database to be ready
+      
       # Pool behavior
       pool-name: TaskManagementHikariCP
       auto-commit: true
@@ -39,14 +45,18 @@ spring:
   jpa:
     show-sql: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: validate  # Validate schema matches entities (Flyway handles migrations)
     properties:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: UTC
+          lob:
+            non_contextual_creation: true  # Fix for PostgreSQL LOB issue
     open-in-view: false
+    # Database initialization
+    defer-datasource-initialization: false  # Flyway runs before Hibernate
 
   servlet:
     multipart:
@@ -61,8 +71,14 @@ spring:
     locations: classpath:db/migration
     baseline-version: 1
     # Retry configuration for Render database initialization
-    connect-retries: 3
-    connect-retries-interval: 10
+    connect-retries: 10  # Increased retries for database to become ready
+    connect-retries-interval: 10  # 10 seconds between retries
+    # Fail on missing migrations
+    fail-on-missing-migrations: false
+    # Out of order migrations
+    out-of-order: false
+    # Default schema
+    default-schema: public
 
 server:
   port: ${PORT:8080}
@@ -112,8 +128,12 @@ logging:
     org.springframework.web: WARN
     org.hibernate: WARN
     org.springframework.security: WARN
+    # Database and connection logging (for debugging deployment issues)
+    com.zaxxer.hikari: ${LOGGING_LEVEL_HIKARI:INFO}
+    org.flywaydb: ${LOGGING_LEVEL_FLYWAY:INFO}
+    org.springframework.jdbc: ${LOGGING_LEVEL_JDBC:WARN}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 management:
   endpoints:

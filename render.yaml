@@ -139,15 +139,24 @@ services:
       - key: SPRING_DATASOURCE_HIKARI_DATA_SOURCE_PROPERTIES_TCP_KEEP_ALIVE
         value: true
 
-      # Logging Configuration
+      # Logging Configuration (set DEBUG for initial deployment troubleshooting)
       - key: LOGGING_LEVEL_ROOT
         value: INFO
 
       - key: LOGGING_LEVEL_COM_ADEWUNMI
-        value: INFO
+        value: DEBUG  # Set to DEBUG for initial deployment
 
       - key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
-        value: WARN
+        value: INFO  # Set to INFO to see startup issues
+      
+      - key: LOGGING_LEVEL_HIKARI
+        value: DEBUG  # Debug connection pool issues
+      
+      - key: LOGGING_LEVEL_FLYWAY
+        value: DEBUG  # Debug migration issues
+      
+      - key: LOGGING_LEVEL_JDBC
+        value: DEBUG  # Debug database connection issues
 
       # Server Configuration
       - key: SERVER_COMPRESSION_ENABLED
