@@ -1,4 +1,4 @@
-# Maven
+# Maven build artifacts
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -8,7 +8,8 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
+# Keep maven wrapper for better build caching
+# .mvn/wrapper/maven-wrapper.jar
 
 # IDE
 .idea/
@@ -36,7 +37,10 @@ Thumbs.db
 
 # Documentation (not needed in container)
 *.md
+!README.md
 docs/
+*.txt
+!requirements.txt
 
 # Test files
 src/test/
@@ -55,3 +59,22 @@ temp/
 *.tmp
 *.swp
 *~
+
+# CI/CD files (not needed in container)
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Docker files (not needed in final image)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Render deployment files
+render.yaml
+build.sh
+start.sh
+
+# Database migrations are needed - DON'T exclude
+# src/main/resources/db/

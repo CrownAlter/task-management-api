@@ -1,0 +1,38 @@
+# .renderignore - Files to exclude from Render deployments
+# Similar to .gitignore but specifically for Render
+
+# Test files (not needed in production)
+src/test/
+*.test.js
+*.spec.js
+
+# Development files
+.env.local
+.env.development
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Documentation (optional - include if needed)
+docs/
+*.md
+!README.md
+
+# Build artifacts (will be rebuilt on Render)
+target/
+*.class
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+.gitattributes
