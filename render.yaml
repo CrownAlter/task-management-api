@@ -1,6 +1,25 @@
 # Render Blueprint for Task Management API
 # Infrastructure as Code for Render
 # Documentation: https://render.com/docs/blueprint-spec
+#
+# ⚠️ FREE TIER CONFIGURATION ⚠️
+# This configuration uses Render's FREE tier with the following limitations:
+# 
+# Web Service (Free):
+#   - 750 hours/month shared across all free services
+#   - Spins down after 15 minutes of inactivity
+#   - Cold starts take 30-60 seconds
+#   - 512 MB RAM, 0.1 CPU
+#   - No persistent disk (files stored in /tmp are ephemeral)
+#
+# PostgreSQL (Free):
+#   - Valid for 90 DAYS only, then requires upgrade
+#   - 256 MB RAM
+#   - 1 GB storage
+#   - Max 97 connections
+#   - No automated backups
+#
+# For production use, upgrade to paid plans (Starter $7/month, Standard $25/month)
 
 services:
   # Spring Boot Application Service
@@ -14,7 +33,7 @@ services:
     dockerContext: .
     
     region: oregon
-    plan: starter  # Use 'starter' for free tier, 'standard' for production
+    plan: free  # Free tier (750 hours/month, spins down after inactivity)
     branch: main
 
     # Health Check Configuration
@@ -80,8 +99,11 @@ services:
         value: 604800000  # 7 days
 
       # File Upload Configuration
+      # NOTE: Free tier does NOT support persistent disk
+      # Files stored in container are EPHEMERAL and will be lost on restart
+      # For production file storage, upgrade to paid plan or use external service (AWS S3, Cloudinary)
       - key: FILE_UPLOAD_DIR
-        value: /var/data/uploads  # Use Render's persistent disk mount path
+        value: /tmp/uploads  # Temporary storage only (free tier limitation)
 
       - key: FILE_MAX_SIZE
         value: 10485760  # 10MB
@@ -91,14 +113,15 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: https://your-frontend-domain.com,https://www.your-frontend-domain.com
 
-      # Database Connection Pool (optimized for Render)
+      # Database Connection Pool (optimized for Render Free Tier)
+      # Render Free PostgreSQL: Max 97 connections (expires after 90 days)
       # Render Starter PostgreSQL: Max 97 connections
       # Render Standard PostgreSQL: Max 300 connections
       - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-        value: 5  # Conservative for starter plan (adjust based on plan)
+        value: 3  # Very conservative for free tier
 
       - key: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
-        value: 2
+        value: 1
 
       - key: SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT
         value: 30000  # 30 seconds
@@ -144,19 +167,22 @@ services:
         value: true
 
     # Persistent Disk for File Uploads
-    disk:
-      name: task-uploads
-      mountPath: /var/data/uploads
-      sizeGB: 10  # Adjust size based on needs (10GB minimum on Render)
+    # WARNING: Persistent disk is NOT available on FREE tier
+    # Uncomment below when you upgrade to a paid plan (Starter or higher)
+    # disk:
+    #   name: task-uploads
+    #   mountPath: /var/data/uploads
+    #   sizeGB: 1  # Minimum 1GB on paid plans
 
 # PostgreSQL Database
 databases:
   - name: task-management-db
     databaseName: task_management_db  # Explicit database name
     user: task_admin  # Explicit username
-    plan: starter  # Use 'starter' for free tier, 'standard' or higher for production
+    plan: free  # FREE tier: Valid for 90 days, then requires upgrade to paid plan
     region: oregon  # Use same region as web service for lower latency
     ipAllowList: []  # Empty allows all Render services (recommended)
     
-    # Automatic backups (available on paid plans)
+    # Note: Free database expires after 90 days
+    # Automatic backups are only available on paid plans
     # postgresMajorVersion: 15  # Specify PostgreSQL version

@@ -145,8 +145,10 @@ app:
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
     
   file:
-    # Use Render's persistent disk mount path
-    upload-dir: ${FILE_UPLOAD_DIR:/var/data/uploads}
+    # WARNING: On Render FREE tier, files are stored in /tmp (ephemeral)
+    # Files will be LOST when the service restarts or spins down
+    # For persistent storage, upgrade to paid plan or use external service (S3, Cloudinary)
+    upload-dir: ${FILE_UPLOAD_DIR:/tmp/uploads}
     max-size: ${FILE_MAX_SIZE:10485760}  # 10MB
     
   cors:
